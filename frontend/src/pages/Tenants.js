@@ -18,31 +18,11 @@ import { Container,
     ListItemText,
     TextField
 } from '@mui/material';
+import axios from 'axios';
 
-const initialTenants = [
-  { id: 1, name: 'Juan Pérez', department: 'A1', status: 'Al día' },
-  { id: 2, name: 'Ana García', department: 'B2', status: 'Atrasado' },
-  { id: 3, name: 'Carlos López', department: 'C3', status: 'Al día' },
-];
-
-// Pagos simulados para cada inquilino
-const paymentsData = {
-  1: [
-    { date: '2024-09-01', amount: 50000 },
-    { date: '2024-08-01', amount: 50000 },
-  ],
-  2: [
-    { date: '2024-09-01', amount: 30000 },
-    { date: '2024-07-01', amount: 30000 },
-  ],
-  3: [
-    { date: '2024-09-01', amount: 40000 },
-    { date: '2024-08-01', amount: 40000 },
-  ],
-};
 
 const Tenants = () => {
-  const [tenants, setTenants] = useState(initialTenants);
+  const [tenants, setTenants] = useState([]);
   const [selectedPayments, setSelectedPayments] = useState([]);
   const [openPaymentsDialog, setOpenPaymentsDialog] = useState(false);
   const [openCreateTenantDialog, setOpenCreateTenantDialog] = useState(false)
@@ -64,16 +44,33 @@ const Tenants = () => {
     setNewTenant({ name: '', department: '' });
   };
 
-  const handleCreateTenant = () => {
-    const newId = tenants.length > 0 ? tenants[tenants.length - 1].id + 1 : 1;
-    const newTenantData = { ...newTenant, id: newId, status: 'Al día' };
-    setTenants([...tenants, newTenantData]);
-    handleCloseCreateTenantDialog(); // Cerrar el diálogo al guardar
+  const getTenants = async () => {
+    try {
+      const response = await axios.get('http://localhost:3001/tenants');
+      setTenants(response.data); 
+    } catch (error) {
+      console.error('Error al obtener los inquilinos:', error);
+    }
+  };
+
+  const handleCreateTenant = async (tenantId) => {
+    try {
+      const response = await axios.post('http://localhost:3001/tenants', {
+        name: newTenant.name,
+        department: newTenant.department,
+        status: null, 
+      });
+      setTenants([...tenants, response.data]);
+      handleCloseCreateTenantDialog();
+      window.location.reload()
+    } catch (error) {
+      console.error('Error al crear un nuevo inquilino:', error);
+    }
   };
     
   const handleViewPayments = (tenantId) => {
-    const payments = paymentsData[tenantId] || [];
-    setSelectedPayments(payments);
+    // const payments = paymentsData[tenantId] || [];
+    // setSelectedPayments(payments);
     setOpenPaymentsDialog(true);
   };
 
@@ -81,9 +78,16 @@ const Tenants = () => {
     setOpenPaymentsDialog(false);
   };
 
-  const handleDeleteTenant = (id) => {
-    const updatedTenants = tenants.filter(tenant => tenant.id !== id);
-    setTenants(updatedTenants);
+  const handleDeleteTenant = async (tenantId) => {
+    try {
+      await axios.delete(`http://localhost:3001/tenants/${tenantId}`);
+      setTenants(prevTenants =>
+        prevTenants.filter(tenant => tenant._id !== tenantId)
+      );
+  
+    } catch (error) {
+      console.error('Error al eliminar el inquilino:', error);
+    }
   };
 
   const handleOpenEditDialog = (tenant) => {
@@ -91,21 +95,31 @@ const Tenants = () => {
     setOpenEditDialog(true);
   };
 
-  const handleSaveEdit = () => {
-    setTenants(prevTenants =>
-      prevTenants.map(tenant =>
-        tenant.id === editableTenant.id ? editableTenant : tenant
-      )
-    );
-    setOpenEditDialog(false);
+  const handleSaveEdit = async () => {
+    try {
+      const response = await axios.put(`http://localhost:3001/tenants/${editableTenant._id}`, editableTenant);
+  
+      setTenants(prevTenants =>
+        prevTenants.map(tenant =>
+          tenant._id === editableTenant._id ? response.data : tenant
+        )
+      );
+      setOpenEditDialog(false);
+      window.location.reload()
+    } catch (error) {
+      console.error('Error al actualizar el inquilino:', error);
+    }
   };
+
+  useEffect(() => {
+    getTenants();
+  }, []);
 
   return (
     <Container>
       <Typography variant="h4" component="h2" gutterBottom>
         Lista de Inquilinos
       </Typography>
-      {/* Botón para abrir el diálogo de crear inquilino */}
       <Button 
         variant="contained" 
         color="primary" 
@@ -154,7 +168,7 @@ const Tenants = () => {
                     variant="outlined" 
                     color="error" 
                     size="small"
-                    onClick={() => handleDeleteTenant(tenant.id)}
+                    onClick={() => handleDeleteTenant(tenant._id)}
                   >
                     Eliminar
                   </Button>
