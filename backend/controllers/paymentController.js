@@ -1,5 +1,5 @@
 const Payment = require('../models/Payment');
-
+const moment = require('moment')
 
 const createPayment = async (req, res) => {
   const { tenantId, amount, description } = req.body;
@@ -18,14 +18,18 @@ const createPayment = async (req, res) => {
   }
 };
 
-const getPayments = async (req, res) => {
-  try {
-    const payments = await Payment.find().populate('tenantId', 'name department'); 
-    res.json(payments);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
+  const getPayments = async (req, res) => {
+    try {
+      const payments = await Payment.find().populate('tenantId'); 
+      const formattedPayments = payments.map(payment => ({
+        ...payment.toObject(),
+        date: moment(payment.date).format('DD-MM-YYYY'), 
+      }));
+      res.status(200).json(formattedPayments);
+    } catch (error) {
+      res.status(500).json({ message: 'Error al obtener los pagos', error });
+    }
+  };
 
 const getPaymentById = async (req, res) => {
   try {
@@ -41,7 +45,6 @@ const getPaymentById = async (req, res) => {
 
 const updatePayment = async (req, res) => {
   const { amount, description } = req.body;
-
   try {
     const payment = await Payment.findById(req.params.id);
     if (!payment) {
@@ -57,7 +60,6 @@ const updatePayment = async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 };
-
 
 const deletePayment = async (req, res) => {
   try {
