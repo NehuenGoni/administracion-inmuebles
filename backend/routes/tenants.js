@@ -56,6 +56,6 @@ router.delete('/:id', async (req, res) => {
 router.post('/payments', paymentController.createPayment);
 
 // Ruta para obtener pagos de un inquilino específico
-router.get('/payments/:tenantId', paymentController.getPaymentsByTenant);
+router.get('/payments/:tenantId', paymentController.getPaymentById);
 
 module.exports = router;
