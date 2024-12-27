@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const tenants = require('./routes/tenants')
+const tenantsRoutes = require('./routes/tenants')
+const paymentRoutes = require('./routes/payments');
 const cors = require('cors')
 
 const app = express();
@@ -20,13 +21,14 @@ mongoose.connect('mongodb+srv://nehuen_goni:K1HcUR7zsTYbccE0@tenantapp.zjj8b.mon
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Ruta de prueba
+// Test
 app.get('/', (req, res) => {
   res.send('Backend funcionando');
 });
 
-// Agregar otras rutas aquí, por ejemplo:
-app.use('/tenants', tenants); // si tienes rutas de inquilinos en otro archivo
+// Rutas
+app.use('/tenants', tenantsRoutes); 
+app.use('/payments', paymentRoutes);
 
 // Iniciar el servidor
 app.listen(port, () => {
