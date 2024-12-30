@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment'
-import axios from 'axios';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import api from '../apiConfig'
 import {
   Table,
@@ -130,6 +131,7 @@ const Payments = () => {
 
 
   const handleCreatePayment = async () => {
+    console.log(newPayment)
     try {
       const response = await api.post('/payments', newPayment);
       setSuccessMessage('Pago creado correctamente');
@@ -157,6 +159,7 @@ const Payments = () => {
 
   const handleOpenModal = (payment = null) => {
     if (payment) {
+      console.log(payment)
       setNewPayment(payment);
       setIsEditMode(true); 
     } else {
@@ -186,12 +189,60 @@ const Payments = () => {
     }
   };
 
+  const handlePrintReceipt = (payment) => {
+    const doc = new jsPDF();
+
+    // Dimensiones
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const receiptHeight = pageHeight / 2;
+
+    // Borde rectangular
+    doc.rect(10, 10, pageWidth - 20, receiptHeight - 20); 
+
+    // Encabezado
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Recibo de Pago", pageWidth / 2, 20, { align: "center" });
+
+    // Línea divisoria
+    doc.setLineWidth(0.5);
+    doc.line(20, 25, pageWidth - 20, 25);
+
+    // Contenido
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    const startY = 40;
+    const lineSpacing = 10;
+
+    doc.text(`Fecha: ${payment.date}`, 20, startY + lineSpacing * 2);
+    doc.text(`Nombre del inquilino: ${payment.tenantName}`, 20, startY);
+    doc.text(`Monto: $${payment.amount}`, 20, startY + lineSpacing);
+    doc.text(`Descripción: ${payment.description}`, 20, startY + lineSpacing * 3);
+    doc.text(`Número de Recibo: ${payment.receiptNumber}`, 20, startY + lineSpacing * 4);
+
+    // Pie de recibo dentro del área definida
+    const footerY = receiptHeight - 20;
+    doc.setLineWidth(0.2);
+    doc.line(20, footerY - 5, pageWidth - 20, footerY - 5);
+    doc.setFontSize(10);
+    doc.text("Gracias por su pago", pageWidth / 2, footerY, { align: "center" });
+
+    // Guardar como PDF
+    doc.save(`Recibo_${payment.receiptNumber}.pdf`);
+};
 
   
   return (
     <div>
       <h1>Gestión de Pagos</h1>
-      <Button variant="contained" color="primary" onClick={handleDialogToggle}>
+      <Button variant="contained" 
+              color="primary" 
+              onClick={() => {
+                setNewPayment({ amount: '', date: moment().format('DD-MM-YYYY'), description: '', tenantId: ''})
+                handleDialogToggle();     
+              }}
+      >
         Agregar Pago
       </Button>
 
@@ -234,19 +285,28 @@ const Payments = () => {
           <TableBody>
             {paymentsList.map((payment) => (
               <TableRow key={payment._id}>
-                <TableCell>{payment.tenantName}</TableCell> {/* Nombre del inquilino */}
+                <TableCell>{payment.tenantId.name}</TableCell>
                 <TableCell>${payment.amount}</TableCell>
                 <TableCell>{ payment.date}</TableCell>
                 <TableCell>{payment.description}</TableCell>
                 <TableCell>{payment.receiptNumber}</TableCell>
                 <TableCell>
-                <Button color="primary" onClick={() => handleOpenModal(payment)}>
+                <Button
+                  variant="contained"
+                  color="default"
+                  onClick={() => handlePrintReceipt(payment)}>
+                    Imprimir
+                </Button>
+                <Button                   
+                  variant="contained"
+                  color="default" 
+                  onClick={() => handleOpenModal(payment)}>
                     Editar
                 </Button>
                 <Button
-                    variant="outlined"
-                    color="secondary"
-                    onClick={() => handleDeletePayment(payment._id)}>
+                  variant="outlined"
+                  color="secondary"
+                  onClick={() => handleDeletePayment(payment._id)}>
                     Eliminar
                 </Button>
                 </TableCell>
@@ -257,7 +317,7 @@ const Payments = () => {
       </TableContainer>
 
 
-      {/* Modal para agregar un nuevo pago */}
+      {/* Modal para agregar/editar un nuevo pago */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
       <DialogTitle>{isEditMode ? 'Editar Pago' : 'Crear Pago'}</DialogTitle>
         <DialogContent>
@@ -267,54 +327,65 @@ const Payments = () => {
             label="Inquilino"
             fullWidth
             margin="normal"
-            value={newPayment.tenantId}
+            value={newPayment?.tenantId?.name || ''}
             onChange={handleChange}
         >
         {tenantsList.map((tenant) => (
-        <MenuItem key={tenant._id} value={tenant._id}>
+        <MenuItem key={tenant._id} value={tenant.name}>
           {tenant.name}
         </MenuItem>
         ))}
+
         </TextField>
-          <TextField
-            name="amount"
-            label="Monto"
-            type="number"
-            fullWidth
-            margin="normal"
-            value={newPayment.amount}
-            onChange={handleChange}
-          />
-          <TextField
-            name="date"
-            label="Fecha"
-            type="date"
-            fullWidth
-            margin="normal"
-            InputLabelProps={{ shrink: true }}
-            value={parseDate(newPayment.date)}
-            onChange={handleChange}
-          />
-          <TextField
-            name="description"
-            label="Descripción"
-            fullWidth
-            margin="normal"
-            value={newPayment.description}
-            onChange={handleChange}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogToggle} color="secondary">
-            Cancelar
-          </Button>
-          <Button
-            onClick={isEditMode ? handleSaveEdit : handleCreatePayment}
-            color="primary"
-            variant="contained"
-        >
-            {isEditMode ? 'Guardar Cambios' : 'Crear'}
-          </Button>
+        <TextField
+          name="department"
+          label="Departamento"
+          fullWidth
+          margin="normal"
+          value={newPayment?.tenantId?.department || ''}
+          InputProps={{
+            readOnly: true,
+          }}
+        />
+        <TextField
+          name="amount"
+          label="Monto"
+          type="number"
+          fullWidth
+          margin="normal"
+          value={newPayment.amount}
+          onChange={handleChange}
+        />
+        <TextField
+          name="date"
+          label="Fecha"
+          type="date"
+          fullWidth
+          margin="normal"
+          InputLabelProps={{ shrink: true }}
+          value={parseDate(newPayment.date)}
+          onChange={handleChange}
+        />
+        <TextField
+          name="description"
+          label="Descripción"
+          fullWidth
+          margin="normal"
+          value={newPayment.description}
+          onChange={handleChange}
+        />
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleDialogToggle} color="secondary">
+          Cancelar
+        </Button>
+        <Button
+          onClick={isEditMode ? handleSaveEdit : handleCreatePayment}
+          color="primary"
+          variant="contained"
+      >
+        {isEditMode ? 'Guardar Cambios' : 'Crear'}
+        </Button>
         </DialogActions>
       </Dialog>
       {successMessage && (
