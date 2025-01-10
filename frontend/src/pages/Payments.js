@@ -32,7 +32,6 @@ const Payments = () => {
   const [successMessage, setSuccessMessage] = useState('');
   const [newPayment, setNewPayment] = useState({
     tenantId: '',
-    tenantName: '',
     amount: '',
     date: moment().format('DD-MM-YYYY'),
     description: '',
@@ -110,7 +109,6 @@ const Payments = () => {
   };
 
 
-
   const fetchPayments = async () => {
     try {
       const response = await api.get('/payments');
@@ -131,9 +129,15 @@ const Payments = () => {
 
 
   const handleCreatePayment = async () => {
-    console.log(newPayment)
     try {
-      const response = await api.post('/payments', newPayment);
+      const paymentToSubmit = { ...newPayment };
+  
+      if (paymentToSubmit.tenantId && typeof paymentToSubmit.tenantId === 'object') {
+        paymentToSubmit.tenantId = paymentToSubmit.tenantId._id;
+      }
+
+      const response = await api.post('/payments', paymentToSubmit)
+
       setSuccessMessage('Pago creado correctamente');
       fetchPayments();
       setNewPayment({ amount: '', date: moment().format('DD-MM-YYYY'), description: '', tenantId: '' });
@@ -146,7 +150,13 @@ const Payments = () => {
 
   const handleSaveEdit = async () => {
     try {
-      const response = await api.put(`/payments/${newPayment._id}`, newPayment);
+      const paymentToSubmit = { ...newPayment };
+  
+      if (paymentToSubmit.tenantId && typeof paymentToSubmit.tenantId === 'object') {
+        paymentToSubmit.tenantId = paymentToSubmit.tenantId._id;
+      }
+  
+      const response = await api.put(`/payments/${newPayment._id}`, paymentToSubmit);
       setSuccessMessage('Pago actualizado correctamente');
       fetchPayments();
       setOpenModal(false); 
@@ -159,7 +169,6 @@ const Payments = () => {
 
   const handleOpenModal = (payment = null) => {
     if (payment) {
-      console.log(payment)
       setNewPayment(payment);
       setIsEditMode(true); 
     } else {
@@ -216,7 +225,7 @@ const Payments = () => {
     const lineSpacing = 10;
 
     doc.text(`Fecha: ${payment.date}`, 20, startY + lineSpacing * 2);
-    doc.text(`Nombre del inquilino: ${payment.tenantName}`, 20, startY);
+    doc.text(`Nombre del inquilino: ${payment.tenantId.name}`, 20, startY);
     doc.text(`Monto: $${payment.amount}`, 20, startY + lineSpacing);
     doc.text(`Descripción: ${payment.description}`, 20, startY + lineSpacing * 3);
     doc.text(`Número de Recibo: ${payment.receiptNumber}`, 20, startY + lineSpacing * 4);
@@ -230,7 +239,7 @@ const Payments = () => {
 
     // Guardar como PDF
     doc.save(`Recibo_${payment.receiptNumber}.pdf`);
-};
+  };
 
   
   return (
@@ -293,7 +302,7 @@ const Payments = () => {
                 <TableCell>
                 <Button
                   variant="contained"
-                  color="default"
+                  color="primary"
                   onClick={() => handlePrintReceipt(payment)}>
                     Imprimir
                 </Button>
@@ -322,20 +331,19 @@ const Payments = () => {
       <DialogTitle>{isEditMode ? 'Editar Pago' : 'Crear Pago'}</DialogTitle>
         <DialogContent>
         <TextField
-            name="tenantId"
-            select
-            label="Inquilino"
-            fullWidth
-            margin="normal"
-            value={newPayment?.tenantId?.name || ''}
-            onChange={handleChange}
+          name="tenantId"
+          select
+          label="Inquilino"
+          fullWidth
+          margin="normal"
+          value={newPayment?.tenantId || ''}
+          onChange={handleChange}
         >
         {tenantsList.map((tenant) => (
-        <MenuItem key={tenant._id} value={tenant.name}>
+        <MenuItem key={tenant} value={tenant}>
           {tenant.name}
         </MenuItem>
         ))}
-
         </TextField>
         <TextField
           name="department"

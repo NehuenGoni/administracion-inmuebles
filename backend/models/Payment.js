@@ -27,17 +27,21 @@ const paymentSchema = new mongoose.Schema({
 });
 
 paymentSchema.pre('save', async function (next) {
-  if (!this.receiptNumber) {
-    const Payment = mongoose.model('Payment', paymentSchema);
-    const lastPayment = await Payment.findOne().sort({ receiptNumber: -1 });
+  if (this.isNew) {
+    try {
+      const lastPayment = await this.constructor.findOne().sort({ receiptNumber: -1 });
 
-    const lastNumber = lastPayment
-      ? parseInt(lastPayment.receiptNumber.split('-')[1], 10)
-      : 0;
+      const lastReceiptNumber = lastPayment?.receiptNumber?.split('-')[1] || '0000';
+      const newNumber = String(parseInt(lastReceiptNumber, 10) + 1).padStart(3, '0');
 
-    this.receiptNumber = `R-${lastNumber + 1}`;
+      this.receiptNumber = `R-${newNumber}`;
+      next();
+    } catch (error) {
+      next(error);
+    }
+  } else {
+    next();
   }
-  next();
 });
 
 const Payment = mongoose.model('Payment', paymentSchema);

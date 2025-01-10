@@ -18,18 +18,18 @@ const createPayment = async (req, res) => {
   }
 };
 
-  const getPayments = async (req, res) => {
-    try {
-      const payments = await Payment.find().populate('tenantId'); 
-      const formattedPayments = payments.map(payment => ({
-        ...payment.toObject(),
-        date: moment(payment.date).format('DD-MM-YYYY'), 
-      }));
-      res.status(200).json(formattedPayments);
-    } catch (error) {
-      res.status(500).json({ message: 'Error al obtener los pagos', error });
-    }
-  };
+const getPayments = async (req, res) => {
+  try {
+    const payments = await Payment.find().populate('tenantId'); 
+    const formattedPayments = payments.map(payment => ({
+      ...payment.toObject(),
+      date: moment(payment.date).format('DD-MM-YYYY'), 
+    }));
+    res.status(200).json(formattedPayments);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los pagos', error });
+  }
+};
 
 const getPaymentById = async (req, res) => {
   try {
@@ -73,10 +73,24 @@ const deletePayment = async (req, res) => {
   }
 };
 
+const getPaymentsByTenant = async (req, res) => {
+  try {
+    const { tenantId } = req.params;
+    const payments = await Payment.find({ tenantId });
+    if (payments.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron pagos para este inquilino' });
+    }
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ message: 'Error al obtener los pagos', error: error.message });
+  }
+};
+
 module.exports = {
   createPayment,
   getPayments,
   getPaymentById,
   updatePayment,
   deletePayment,
+  getPaymentsByTenant
 };
