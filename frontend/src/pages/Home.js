@@ -5,11 +5,8 @@ import { Link } from 'react-router-dom';
 const Home = () => {
   return (
     <Container>
-      <Typography variant="h3" component="h1" gutterBottom>
+      <Typography variant="h3" component="h1" gutterBottom style={{marginTop:'20px', marginBottom:'20px'}} >
         Bienvenido a la Administración de Inmuebles
-      </Typography>
-      <Typography variant="body1" gutterBottom>
-        Utilice el menú de navegación o los botones a continuación para gestionar los inquilinos, registrar pagos o generar recibos.
       </Typography>
       <Button 
         variant="contained" 

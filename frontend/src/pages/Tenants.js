@@ -19,6 +19,8 @@ import { Container,
     ListItemText,
     TextField
 } from '@mui/material';
+import moment from 'moment'
+import Divider from '@mui/material/Divider';
 
 
 const Tenants = () => {
@@ -235,27 +237,45 @@ const Tenants = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={openPaymentsDialog} onClose={handleClosePaymentsDialog}>
-        <DialogTitle>Historial de Pagos</DialogTitle>
-        <DialogContent>
-          {selectedTenantPayments.length > 0 ? (
-            <List>
-              {selectedTenantPayments.map((payment, index) => (
-                <ListItem key={index}>
-                  <ListItemText primary={`Fecha: ${payment.date}`} secondary={`Monto: $${payment.amount}`} />
+      <Dialog open={openPaymentsDialog} onClose={handleClosePaymentsDialog} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ backgroundColor: '#1976d2', color: 'white' }}>
+        Historial de Pagos
+      </DialogTitle>
+      <DialogContent>
+        {selectedTenantPayments.length > 0 ? (
+          <List>
+            {selectedTenantPayments.map((payment, index) => (
+              <React.Fragment key={index}>
+                <ListItem alignItems="flex-start">
+                  <ListItemText
+                    primary={
+                      <Typography variant="subtitle1" color="textPrimary">
+                        {`Fecha: ${moment(payment.date, 'DD-MM-YYYY').format('D MMM YYYY')}`}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="textSecondary">
+                        {`Monto: $${payment.amount}`}
+                      </Typography>
+                    }
+                  />
                 </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>No hay pagos registrados para este inquilino.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClosePaymentsDialog} color="primary">
-            Cerrar
-          </Button>
-        </DialogActions>
-      </Dialog>
+                {index < selectedTenantPayments.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body1" color="textSecondary" align="center">
+            No hay pagos registrados para este inquilino.
+          </Typography>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClosePaymentsDialog} variant="contained" color="primary">
+          Cerrar
+        </Button>
+      </DialogActions>
+      </Dialog> 
     </Container>
   );
 };
