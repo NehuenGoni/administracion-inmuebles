@@ -12,4 +12,6 @@ router.put('/:id', paymentController.updatePayment);
 
 router.delete('/:id', paymentController.deletePayment);
 
+router.get('/tenant/:tenantId', paymentController.getPaymentsByTenant);
+
 module.exports = router;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import api from '../apiConfig'
 import { Container, 
     Typography, 
     Table, 
@@ -18,15 +19,16 @@ import { Container,
     ListItemText,
     TextField
 } from '@mui/material';
-import axios from 'axios';
+import moment from 'moment'
+import Divider from '@mui/material/Divider';
 
 
 const Tenants = () => {
   const [tenants, setTenants] = useState([]);
-  const [selectedPayments, setSelectedPayments] = useState([]);
   const [openPaymentsDialog, setOpenPaymentsDialog] = useState(false);
   const [openCreateTenantDialog, setOpenCreateTenantDialog] = useState(false)
   const [newTenant, setNewTenant] = useState({ name: '', department: '' });
+  const [selectedTenantPayments, setSelectedTenantPayments] = useState([])
 
   const [openEditDialog, setOpenEditDialog] = useState(false);
   const [editableTenant, setEditableTenant] = useState(null)
@@ -46,7 +48,7 @@ const Tenants = () => {
 
   const getTenants = async () => {
     try {
-      const response = await axios.get('http://localhost:3001/tenants');
+      const response = await api.get('/tenants');
       setTenants(response.data); 
     } catch (error) {
       console.error('Error al obtener los inquilinos:', error);
@@ -55,7 +57,7 @@ const Tenants = () => {
 
   const handleCreateTenant = async (tenantId) => {
     try {
-      const response = await axios.post('http://localhost:3001/tenants', {
+      const response = await api.post('/tenants', {
         name: newTenant.name,
         department: newTenant.department,
         status: null, 
@@ -68,10 +70,15 @@ const Tenants = () => {
     }
   };
     
-  const handleViewPayments = (tenantId) => {
-    // const payments = paymentsData[tenantId] || [];
-    // setSelectedPayments(payments);
+  const handleViewPayments = async (tenantId) => {
     setOpenPaymentsDialog(true);
+    try {
+      const resp = await api.get(`/payments/tenant/${tenantId}`);
+      setSelectedTenantPayments(resp.data); 
+      setOpenPaymentsDialog(true); 
+    } catch (error) {
+      console.error('Error al obtener los pagos del inquilino:', error);
+    }
   };
 
   const handleClosePaymentsDialog = () => {
@@ -80,7 +87,7 @@ const Tenants = () => {
 
   const handleDeleteTenant = async (tenantId) => {
     try {
-      await axios.delete(`http://localhost:3001/tenants/${tenantId}`);
+      await api.delete(`/tenants/${tenantId}`);
       setTenants(prevTenants =>
         prevTenants.filter(tenant => tenant._id !== tenantId)
       );
@@ -97,8 +104,7 @@ const Tenants = () => {
 
   const handleSaveEdit = async () => {
     try {
-      const response = await axios.put(`http://localhost:3001/tenants/${editableTenant._id}`, editableTenant);
-  
+      const response = await api.put(`/tenants/${editableTenant._id}`, editableTenant);
       setTenants(prevTenants =>
         prevTenants.map(tenant =>
           tenant._id === editableTenant._id ? response.data : tenant
@@ -151,7 +157,7 @@ const Tenants = () => {
                     color="primary" 
                     size="small"
                     sx={{ marginRight: 1 }}
-                    onClick={() => handleViewPayments(tenant.id)}
+                    onClick={() => handleViewPayments(tenant._id)}
                   >
                     Ver Pagos
                   </Button>
@@ -231,27 +237,45 @@ const Tenants = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog open={openPaymentsDialog} onClose={handleClosePaymentsDialog}>
-        <DialogTitle>Historial de Pagos</DialogTitle>
-        <DialogContent>
-          {selectedPayments.length > 0 ? (
-            <List>
-              {selectedPayments.map((payment, index) => (
-                <ListItem key={index}>
-                  <ListItemText primary={`Fecha: ${payment.date}`} secondary={`Monto: $${payment.amount}`} />
+      <Dialog open={openPaymentsDialog} onClose={handleClosePaymentsDialog} fullWidth maxWidth="sm">
+      <DialogTitle sx={{ backgroundColor: '#1976d2', color: 'white' }}>
+        Historial de Pagos
+      </DialogTitle>
+      <DialogContent>
+        {selectedTenantPayments.length > 0 ? (
+          <List>
+            {selectedTenantPayments.map((payment, index) => (
+              <React.Fragment key={index}>
+                <ListItem alignItems="flex-start">
+                  <ListItemText
+                    primary={
+                      <Typography variant="subtitle1" color="textPrimary">
+                        {`Fecha: ${moment(payment.date, 'DD-MM-YYYY').format('D MMM YYYY')}`}
+                      </Typography>
+                    }
+                    secondary={
+                      <Typography variant="body2" color="textSecondary">
+                        {`Monto: $${payment.amount}`}
+                      </Typography>
+                    }
+                  />
                 </ListItem>
-              ))}
-            </List>
-          ) : (
-            <Typography>No hay pagos registrados para este inquilino.</Typography>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleClosePaymentsDialog} color="primary">
-            Cerrar
-          </Button>
-        </DialogActions>
-      </Dialog>
+                {index < selectedTenantPayments.length - 1 && <Divider />}
+              </React.Fragment>
+            ))}
+          </List>
+        ) : (
+          <Typography variant="body1" color="textSecondary" align="center">
+            No hay pagos registrados para este inquilino.
+          </Typography>
+        )}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleClosePaymentsDialog} variant="contained" color="primary">
+          Cerrar
+        </Button>
+      </DialogActions>
+      </Dialog> 
     </Container>
   );
 };
