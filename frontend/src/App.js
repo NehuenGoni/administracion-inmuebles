@@ -6,17 +6,21 @@ import Payments from './pages/Payments';
 import Receipts from './pages/Receipts';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
+import PrivateRoute from './components/PrivateRoute';
 
 function App() {
   return (
     <Router>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/login" element={<Login />} />    
-        <Route path="/tenants" element={<Tenants />} />
-        <Route path="/payments" element={<Payments />} />
-        <Route path="/receipts" element={<Receipts />} />
+        <Route path="/login" element={<Login />} />          
+        <Route path="/register" element={<Login />} /> 
+
+        <Route path="/" element={<PrivateRoute> <Home /> </PrivateRoute>} />
+        <Route path="/tenants" element={<PrivateRoute> <Tenants /> </PrivateRoute>} />
+        <Route path="/payments" element={<PrivateRoute> <Payments /> </PrivateRoute>} />
+        <Route path="/receipts" element={<PrivateRoute> <Receipts /> </PrivateRoute>} />
+
       </Routes>
     </Router>
   );
