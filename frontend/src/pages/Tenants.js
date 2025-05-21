@@ -48,7 +48,13 @@ const Tenants = () => {
 
   const getTenants = async () => {
     try {
-      const response = await api.get('/tenants');
+      const token = localStorage.getItem('token')
+
+      const response = await api.get('/tenants',
+        {
+          headers: { Authorization: `Bearer ${token}`}
+        }
+      );
       setTenants(response.data); 
     } catch (error) {
       console.error('Error al obtener los inquilinos:', error);
@@ -57,10 +63,15 @@ const Tenants = () => {
 
   const handleCreateTenant = async (tenantId) => {
     try {
+      const token = localStorage.getItem('token')
+
       const response = await api.post('/tenants', {
         name: newTenant.name,
         department: newTenant.department,
         status: null, 
+      },
+      {
+        headers: { Authorization: `Bearer ${token}`}
       });
       setTenants([...tenants, response.data]);
       handleCloseCreateTenantDialog();

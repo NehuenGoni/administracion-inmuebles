@@ -1,15 +1,19 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Typography } from '@mui/material';
+import { Button, TextField, Typography, Link } from '@mui/material';
 import api from '../apiConfig';
 
 const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
+  const location = useLocation()
+  const isLogin = location.pathname === '/login'
+
   const initialValues = {
+    name: '',
     email: '',
     password: ''
   };
@@ -24,12 +28,21 @@ const Login = () => {
   });
 
   const onSubmit = async (values) => {
-    try {
-      const response = await api.post('/users/login', values);
-      localStorage.setItem('token', response.data.token);
-      navigate.push('/');
-    } catch (error) {
-      setErrorMessage('Error al iniciar sesión. Intenta de nuevo.');
+    if(isLogin) {
+      try {
+        const response = await api.post('/users/login', values);
+        localStorage.setItem('token', response.data.token);
+        navigate('/');
+      } catch (error) {
+        setErrorMessage('Error al iniciar sesión. Intenta de nuevo.');
+      }
+    } else {
+      try {
+        const response = await api.post('/users/register', values);
+        navigate('/login');
+      } catch (error) {
+        setErrorMessage('Error al crear cuenta. Intenta de nuevo.');
+      }
     }
   };
 
@@ -38,10 +51,11 @@ const Login = () => {
         style={{
             display: 'flex', 
             alignItems: 'center', 
-            justifyContent: 'center', 
+            justifyContent: 'center',
+            marginTop: '30px' ,
             flexDirection: 'column' }}>
-      <Typography variant="h4" gutterBottom>
-        Iniciar sesión
+      <Typography variant="h5" gutterBottom>
+        {isLogin ?  'Iniciar sesión' : 'Registrarse'}
       </Typography>
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
       
@@ -52,6 +66,20 @@ const Login = () => {
       >
         {({ touched, errors }) => (
           <Form>
+            {!isLogin && (
+              <div>
+                <Field
+                  name="name"
+                  as={TextField}
+                  label="Nombre y Apellido"
+                  fullWidth
+                  margin="normal"
+                  variant="outlined"
+                  error={touched.name && Boolean(errors.name)}
+                  helperText={touched.name && errors.name}
+                />
+              </div>  
+            )}
             <div>
               <Field
                 name="email"
@@ -78,11 +106,17 @@ const Login = () => {
               />
             </div>
             <Button type="submit" variant="contained" color="primary" fullWidth>
-              Iniciar sesión
+              { isLogin ? 'Iniciar sesión' : 'Registrarse' }
             </Button>
           </Form>
         )}
       </Formik>
+      <Typography variant="body2" sx={{ mt: 2 }}>
+        ¿No tenés una cuenta?{' '}
+        <Link component={RouterLink} to="/register">
+        Registrate acá
+      </Link>
+    </Typography>
     </div>
   );
 };
