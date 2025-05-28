@@ -24,6 +24,11 @@ const paymentSchema = new mongoose.Schema({
     unique: true, 
     required: false 
   },
+  user: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true,
+  }
 });
 
 paymentSchema.pre('save', async function (next) {
