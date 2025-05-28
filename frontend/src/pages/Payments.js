@@ -3,6 +3,9 @@ import moment from 'moment'
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import api from '../apiConfig'
+import { getTenants } from '../api/tenantsApi';
+import { fetchPayments, createPayment, updatePayment, deletePayment  } from '../api/paymentsApi';
+
 import {
   Table,
   TableBody,
@@ -37,20 +40,24 @@ const Payments = () => {
     description: '',
   });
 
-  useEffect(() => {
-    fetchTenants();
-    fetchPayments();
-  }, []);
 
 
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('amount');
+
+  const [openSnackbar, setOpenSnackbar] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState('')
 
   const handleRequestSort = (property) => {
     const isAsc = orderBy === property && order === 'asc';
     setOrder(isAsc ? 'desc' : 'asc');
     setOrderBy(property);
   };
+
+    useEffect(() => {
+      fetchTenants();
+      fetchPaymentsUser();
+    }, []);
 
   const stableSort = (array, comparator) => {
     const stabilizedThis = array.map((el, index) => [el, index]);
@@ -109,10 +116,10 @@ const Payments = () => {
   };
 
 
-  const fetchPayments = async () => {
+  const fetchPaymentsUser = async () => {
     try {
-      const response = await api.get('/payments');
-      setPaymentsList(response.data); 
+      const response = await fetchPayments()
+      setPaymentsList(response); 
     } catch (error) {
       console.error('Error al obtener los pagos:', error);
     }
@@ -120,13 +127,12 @@ const Payments = () => {
 
   const fetchTenants = async () => {
     try {
-      const response = await api.get('/tenants');
-      setTenantsList(response.data);
+      const tenantsData = await getTenants()
+      setTenantsList(tenantsData);
     } catch (error) {
       console.error('Error al obtener inquilinos:', error);
     }
   };
-
 
   const handleCreatePayment = async () => {
     try {
@@ -135,11 +141,10 @@ const Payments = () => {
       if (paymentToSubmit.tenantId && typeof paymentToSubmit.tenantId === 'object') {
         paymentToSubmit.tenantId = paymentToSubmit.tenantId._id;
       }
-
-      const response = await api.post('/payments', paymentToSubmit)
+      await createPayment(paymentToSubmit);
 
       setSuccessMessage('Pago creado correctamente');
-      fetchPayments();
+      fetchPaymentsUser();
       setNewPayment({ amount: '', date: moment().format('DD-MM-YYYY'), description: '', tenantId: '' });
       setOpenModal(false); 
     } catch (error) {
@@ -150,15 +155,9 @@ const Payments = () => {
 
   const handleSaveEdit = async () => {
     try {
-      const paymentToSubmit = { ...newPayment };
-  
-      if (paymentToSubmit.tenantId && typeof paymentToSubmit.tenantId === 'object') {
-        paymentToSubmit.tenantId = paymentToSubmit.tenantId._id;
-      }
-  
-      const response = await api.put(`/payments/${newPayment._id}`, paymentToSubmit);
+      await updatePayment(newPayment)
       setSuccessMessage('Pago actualizado correctamente');
-      fetchPayments();
+      fetchPaymentsUser();
       setOpenModal(false); 
     } catch (error) {
       console.error('Error al actualizar el pago:', error);
@@ -168,6 +167,7 @@ const Payments = () => {
   const [openModal, setOpenModal] = useState(false)
 
   const handleOpenModal = (payment = null) => {
+    console.log(payment)
     if (payment) {
       setNewPayment(payment);
       setIsEditMode(true); 
@@ -178,25 +178,22 @@ const Payments = () => {
     setOpenModal(true);
   };
   
-  const [openSnackbar, setOpenSnackbar] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState('')
+const handleDeletePayment = async (paymentId) => {
+  try {
+    const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este pago?');
+    if (!confirmDelete) return;
 
-  const handleDeletePayment = async (paymentId) => {
-    try {
-      const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este pago?');
-      if (!confirmDelete) return
-
-      await api.delete(`/payments/${paymentId}`);
-      setSnackbarMessage('Pago eliminado correctamente')
-      setOpenSnackbar(true)
-      setSuccessMessage('Pago eliminado correctamente');
-      fetchPayments()
-    } catch (error) {
-        console.error('Error al eliminar el pago:', error.response?.data || error.message);
-        setSnackbarMessage('Hubo un problema al eliminar el pago');
-        setOpenSnackbar(true);
-    }
-  };
+    await deletePayment(paymentId);
+    setSnackbarMessage('Pago eliminado correctamente');
+    setOpenSnackbar(true);
+    setSuccessMessage('Pago eliminado correctamente');
+    fetchPaymentsUser();
+  } catch (error) {
+    console.error('Error al eliminar el pago:', error.response?.data || error.message);
+    setSnackbarMessage('Hubo un problema al eliminar el pago');
+    setOpenSnackbar(true);
+  }
+};
 
   const handlePrintReceipt = (payment) => {
     const doc = new jsPDF();
@@ -249,7 +246,7 @@ const Payments = () => {
               color="primary" 
               onClick={() => {
                 setNewPayment({ amount: '', date: moment().format('DD-MM-YYYY'), description: '', tenantId: ''})
-                handleDialogToggle();     
+                handleOpenModal();     
               }}
       >
         Agregar Pago
@@ -292,7 +289,7 @@ const Payments = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paymentsList.map((payment) => (
+            {paymentsList?.map((payment) => (
               <TableRow key={payment._id}>
                 <TableCell>{payment.tenantId.name}</TableCell>
                 <TableCell>${payment.amount}</TableCell>
@@ -326,7 +323,7 @@ const Payments = () => {
       </TableContainer>
 
 
-      {/* Modal para agregar/editar un nuevo pago */}
+      {/* Create Modal */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
       <DialogTitle>{isEditMode ? 'Editar Pago' : 'Crear Pago'}</DialogTitle>
         <DialogContent>
@@ -339,7 +336,7 @@ const Payments = () => {
           value={newPayment?.tenantId || ''}
           onChange={handleChange}
         >
-        {tenantsList.map((tenant) => (
+        {tenantsList?.map((tenant) => (
         <MenuItem key={tenant} value={tenant}>
           {tenant.name}
         </MenuItem>
