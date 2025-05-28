@@ -65,15 +65,15 @@ const Payments = () => {
   //   return stabilizedThis.map((el) => el[0]);
   // };
 
-  const descendingComparator = (a, b, orderBy) => {
-    if (b[orderBy] < a[orderBy]) {
-      return -1;
-    }
-    if (b[orderBy] > a[orderBy]) {
-      return 1;
-    }
-    return 0;
-  };
+  // const descendingComparator = (a, b, orderBy) => {
+  //   if (b[orderBy] < a[orderBy]) {
+  //     return -1;
+  //   }
+  //   if (b[orderBy] > a[orderBy]) {
+  //     return 1;
+  //   }
+  //   return 0;
+  // };
 
   // const comparator = (a, b) => {
   //   return order === 'desc'
