@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../apiConfig'
+import { getTenants, deleteTenant, createTenant  } from '../api/tenantsApi'
+
 import { Container, 
     Typography, 
     Table, 
@@ -46,40 +48,29 @@ const Tenants = () => {
     setNewTenant({ name: '', department: '' });
   };
 
-  const getTenants = async () => {
-    try {
-      const token = localStorage.getItem('token')
+  const handleClosePaymentsDialog = () => {
+    setOpenPaymentsDialog(false);
+  };
 
-      const response = await api.get('/tenants',
-        {
-          headers: { Authorization: `Bearer ${token}`}
-        }
-      );
-      setTenants(response.data); 
+  const fetchTenants = async () => {
+    try {
+      const tenantsData = await getTenants()
+      setTenants(tenantsData); 
     } catch (error) {
       console.error('Error al obtener los inquilinos:', error);
     }
   };
 
-  const handleCreateTenant = async (tenantId) => {
-    try {
-      const token = localStorage.getItem('token')
-
-      const response = await api.post('/tenants', {
-        name: newTenant.name,
-        department: newTenant.department,
-        status: null, 
-      },
-      {
-        headers: { Authorization: `Bearer ${token}`}
-      });
-      setTenants([...tenants, response.data]);
-      handleCloseCreateTenantDialog();
-      window.location.reload()
-    } catch (error) {
-      console.error('Error al crear un nuevo inquilino:', error);
-    }
-  };
+const handleCreateTenant = async () => {
+  try {
+    const createdTenant = await createTenant(newTenant);
+    setTenants([...tenants, createdTenant]);
+    handleCloseCreateTenantDialog();
+    window.location.reload();
+  } catch (error) {
+    console.error('Error al crear un nuevo inquilino:', error);
+  }
+};
     
   const handleViewPayments = async (tenantId) => {
     setOpenPaymentsDialog(true);
@@ -92,21 +83,16 @@ const Tenants = () => {
     }
   };
 
-  const handleClosePaymentsDialog = () => {
-    setOpenPaymentsDialog(false);
-  };
-
-  const handleDeleteTenant = async (tenantId) => {
-    try {
-      await api.delete(`/tenants/${tenantId}`);
-      setTenants(prevTenants =>
-        prevTenants.filter(tenant => tenant._id !== tenantId)
-      );
-  
-    } catch (error) {
-      console.error('Error al eliminar el inquilino:', error);
-    }
-  };
+const handleDeleteTenant = async (tenantId) => {
+  try {
+    await deleteTenant(tenantId);
+    setTenants(prevTenants =>
+      prevTenants.filter(tenant => tenant._id !== tenantId)
+    );
+  } catch (error) {
+    console.error('Error al eliminar el inquilino:', error);
+  }
+};
 
   const handleOpenEditDialog = (tenant) => {
     setEditableTenant(tenant);
@@ -129,7 +115,7 @@ const Tenants = () => {
   };
 
   useEffect(() => {
-    getTenants();
+    fetchTenants();
   }, []);
 
   return (

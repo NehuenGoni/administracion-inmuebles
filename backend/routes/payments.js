@@ -1,17 +1,18 @@
 const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
+const authenticateToken = require('../middlewares/authenticateToken')
 
-router.post('/', paymentController.createPayment);
+router.post('/', authenticateToken, paymentController.createPayment);
 
-router.get('/', paymentController.getPayments);
+router.get('/', authenticateToken, paymentController.getPayments);
 
-router.get('/:id', paymentController.getPaymentById);
+router.get('/:id', authenticateToken, paymentController.getPaymentById);
 
-router.put('/:id', paymentController.updatePayment);
+router.put('/:id', authenticateToken, paymentController.updatePayment);
 
-router.delete('/:id', paymentController.deletePayment);
+router.delete('/:id', authenticateToken, paymentController.deletePayment);
 
-router.get('/tenant/:tenantId', paymentController.getPaymentsByTenant);
+router.get('/tenant/:tenantId', authenticateToken, paymentController.getPaymentsByTenant);
 
 module.exports = router;
