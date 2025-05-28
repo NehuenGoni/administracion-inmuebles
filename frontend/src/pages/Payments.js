@@ -55,15 +55,15 @@ const Payments = () => {
       fetchPaymentsUser();
     }, []);
 
-  const stableSort = (array, comparator) => {
-    const stabilizedThis = array.map((el, index) => [el, index]);
-    stabilizedThis.sort((a, b) => {
-      const order = comparator(a[0], b[0]);
-      if (order !== 0) return order;
-      return a[1] - b[1];
-    });
-    return stabilizedThis.map((el) => el[0]);
-  };
+  // const stableSort = (array, comparator) => {
+  //   const stabilizedThis = array.map((el, index) => [el, index]);
+  //   stabilizedThis.sort((a, b) => {
+  //     const order = comparator(a[0], b[0]);
+  //     if (order !== 0) return order;
+  //     return a[1] - b[1];
+  //   });
+  //   return stabilizedThis.map((el) => el[0]);
+  // };
 
   const descendingComparator = (a, b, orderBy) => {
     if (b[orderBy] < a[orderBy]) {
@@ -75,11 +75,11 @@ const Payments = () => {
     return 0;
   };
 
-  const comparator = (a, b) => {
-    return order === 'desc'
-      ? descendingComparator(a, b, orderBy)
-      : descendingComparator(a, b, orderBy);
-  };
+  // const comparator = (a, b) => {
+  //   return order === 'desc'
+  //     ? descendingComparator(a, b, orderBy)
+  //     : descendingComparator(a, b, orderBy);
+  // };
 
   const formatDate = (date) => {
     if (!date) return '';
