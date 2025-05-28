@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import moment from 'moment'
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import api from '../apiConfig'
 import { getTenants } from '../api/tenantsApi';
 import { fetchPayments, createPayment, updatePayment, deletePayment  } from '../api/paymentsApi';
 
@@ -27,8 +25,6 @@ import {
 } from '@mui/material';
 
 const Payments = () => {
-  const [payments, setPayments] = useState([]);
-  const [openDialog, setOpenDialog] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const [tenantsList, setTenantsList] = useState([])
   const [paymentsList, setPaymentsList] = useState([])
@@ -84,8 +80,6 @@ const Payments = () => {
       ? descendingComparator(a, b, orderBy)
       : descendingComparator(a, b, orderBy);
   };
-
-  const sortedPayments = stableSort(payments, comparator);
 
   const formatDate = (date) => {
     if (!date) return '';
