@@ -38,7 +38,7 @@ const Login = () => {
       }
     } else {
       try {
-        const response = await api.post('/users/register', values);
+        //const response = await api.post('/users/register', values);
         navigate('/login');
       } catch (error) {
         setErrorMessage('Error al crear cuenta. Intenta de nuevo.');
