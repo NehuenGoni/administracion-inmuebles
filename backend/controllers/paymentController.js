@@ -4,11 +4,14 @@ const moment = require('moment')
 const createPayment = async (req, res) => {
   const { tenantId, amount, description } = req.body;
 
+  const userId = req.user.id
+
   try {
     const newPayment = new Payment({
       tenantId,
       amount,
       description,
+      user: userId
     });
 
     await newPayment.save();
@@ -19,8 +22,10 @@ const createPayment = async (req, res) => {
 };
 
 const getPayments = async (req, res) => {
+  const userId = req.user.id
+
   try {
-    const payments = await Payment.find().populate('tenantId'); 
+    const payments = await Payment.find({user: userId}).populate('tenantId'); 
     const formattedPayments = payments.map(payment => ({
       ...payment.toObject(),
       date: moment(payment.date).format('DD-MM-YYYY'), 
