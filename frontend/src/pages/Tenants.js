@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import api from '../api/axiosConfig';
 import { getTenants, deleteTenant, updateTenant, createTenant  } from '../api/tenantsApi'
 import { fetchPaymentsByTenantId } from '../api/paymentsApi';
 
