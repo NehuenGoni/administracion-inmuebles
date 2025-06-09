@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import api from '../apiConfig'
-import { getTenants, deleteTenant, createTenant  } from '../api/tenantsApi'
+import api from '../api/axiosConfig';
+import { getTenants, deleteTenant, updateTenant, createTenant  } from '../api/tenantsApi'
+import { fetchPaymentsByTenantId } from '../api/paymentsApi';
 
 import { Container, 
     Typography, 
@@ -66,7 +67,7 @@ const handleCreateTenant = async () => {
     const createdTenant = await createTenant(newTenant);
     setTenants([...tenants, createdTenant]);
     handleCloseCreateTenantDialog();
-    window.location.reload();
+    fetchTenants()
   } catch (error) {
     console.error('Error al crear un nuevo inquilino:', error);
   }
@@ -75,8 +76,8 @@ const handleCreateTenant = async () => {
   const handleViewPayments = async (tenantId) => {
     setOpenPaymentsDialog(true);
     try {
-      const resp = await api.get(`/payments/tenant/${tenantId}`);
-      setSelectedTenantPayments(resp.data); 
+      const resp = await fetchPaymentsByTenantId(tenantId);
+      setSelectedTenantPayments(resp); 
       setOpenPaymentsDialog(true); 
     } catch (error) {
       console.error('Error al obtener los pagos del inquilino:', error);
@@ -101,14 +102,14 @@ const handleDeleteTenant = async (tenantId) => {
 
   const handleSaveEdit = async () => {
     try {
-      const response = await api.put(`/tenants/${editableTenant._id}`, editableTenant);
+      const updatedTenant = await updateTenant(editableTenant._id, editableTenant);
       setTenants(prevTenants =>
         prevTenants.map(tenant =>
-          tenant._id === editableTenant._id ? response.data : tenant
+          tenant._id === editableTenant._id ? updatedTenant : tenant
         )
       );
       setOpenEditDialog(false);
-      window.location.reload()
+      fetchTenants()
     } catch (error) {
       console.error('Error al actualizar el inquilino:', error);
     }
@@ -142,7 +143,7 @@ const handleDeleteTenant = async (tenantId) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {tenants.map((tenant) => (
+            {tenants?.map((tenant) => (
               <TableRow key={tenant.id}>
                 <TableCell>{tenant.id}</TableCell>
                 <TableCell>{tenant.name}</TableCell>

@@ -2,7 +2,7 @@ const Payment = require('../models/Payment');
 const moment = require('moment')
 
 const createPayment = async (req, res) => {
-  const { tenantId, amount, description } = req.body;
+  const { tenantId, amount, description, date } = req.body;
 
   const userId = req.user.id
 
@@ -10,8 +10,9 @@ const createPayment = async (req, res) => {
     const newPayment = new Payment({
       tenantId,
       amount,
+      date: moment(date, 'DD-MM-YYY').toDate(),
       description,
-      user: userId
+      user: userId,
     });
 
     await newPayment.save();
@@ -49,7 +50,7 @@ const getPaymentById = async (req, res) => {
 };
 
 const updatePayment = async (req, res) => {
-  const { amount, description } = req.body;
+  const { amount, description, date } = req.body;
   try {
     const payment = await Payment.findById(req.params.id);
     if (!payment) {
@@ -58,6 +59,14 @@ const updatePayment = async (req, res) => {
 
     if (amount !== undefined) payment.amount = amount;
     if (description !== undefined) payment.description = description;
+    
+    if (date !== undefined) {
+      const parsedDate = moment(date, 'DD-MM-YYYY', true);
+      if (!parsedDate.isValid()) {
+        return res.status(400).json({ message: 'Formato de fecha inválido. Debe ser DD-MM-YYYY' });
+      }
+      payment.date = parsedDate.toDate();
+    }
 
     await payment.save();
     res.json(payment);
