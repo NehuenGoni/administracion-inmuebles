@@ -81,11 +81,11 @@ const Payments = () => {
   //     : descendingComparator(a, b, orderBy);
   // };
 
-  const formatDate = (date) => {
-    if (!date) return '';
-    const [year, month, day] = date.split('-');
-    return `${day}-${month}-${year}`;
-  };
+  // const formatDate = (date) => {
+  //   if (!date) return '';
+  //   const [year, month, day] = date.split('-');
+  //   return `${day}-${month}-${year}`;
+  // };
 
   const parseDate = (date) => {
     if (!date) return '';
