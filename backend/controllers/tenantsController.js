@@ -48,20 +48,13 @@ const updateTenant = async (req, res) => {
 };
 
 const deleteTenant = async (req, res) => {
-  try {
-    const tenant = await Tenant.findById(req.params.id);
-    if (!tenant) {
-      return res.status(404).json({ message: 'Inquilino no encontrado' });
-    }
-
-    if (tenant.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Sin autorización para esta acción.' });
-    }
-
-    await tenant.remove();
-    res.json({ message: 'Inquilino eliminado' });
+    try {
+    const { id } = req.params;
+    await Tenant.findByIdAndDelete(id);
+    res.status(200).json({ message: 'Inquilino eliminado' });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error('Error al eliminar inquilino:', error);
+    res.status(500).json({ message: 'Error del servidor' });
   }
 };
 

@@ -3,7 +3,7 @@ import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
 import { Formik, Field, Form } from 'formik';
 import * as Yup from 'yup';
 import { Button, TextField, Typography, Link } from '@mui/material';
-import api from '../apiConfig';
+import api from '../api/axiosConfig';
 
 const Login = () => {
   const [errorMessage, setErrorMessage] = useState('');
