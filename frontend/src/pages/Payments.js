@@ -32,7 +32,7 @@ const Payments = () => {
   const [newPayment, setNewPayment] = useState({
     tenantId: '',
     amount: '',
-    date: moment().format('DD-MM-YYYY'),
+    date: moment().format('YYYY-MM-DD'),
     description: '',
   });
 
@@ -91,14 +91,14 @@ const Payments = () => {
     if (!date) return '';
     const [day, month, year] = date.split('-');
     return `${year}-${month}-${day}`;
-  };
+  };  
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === 'date') {
       setNewPayment((prev) => ({
         ...prev,
-        [name]: value ? formatDate(value) : '',
+        [name]: value ? parseDate(value) : '',
       }));
     } else {
       setNewPayment((prev) => ({ ...prev, [name]: value }));
@@ -109,7 +109,7 @@ const Payments = () => {
     setOpenModal(!openModal);
   };
 
-
+  
   const fetchPaymentsUser = async () => {
     try {
       const response = await fetchPayments()
@@ -172,22 +172,22 @@ const Payments = () => {
     setOpenModal(true);
   };
   
-const handleDeletePayment = async (paymentId) => {
-  try {
-    const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este pago?');
-    if (!confirmDelete) return;
+  const handleDeletePayment = async (paymentId) => {
+    try {
+      const confirmDelete = window.confirm('¿Estás seguro de que deseas eliminar este pago?');
+      if (!confirmDelete) return;
 
-    await deletePayment(paymentId);
-    setSnackbarMessage('Pago eliminado correctamente');
-    setOpenSnackbar(true);
-    setSuccessMessage('Pago eliminado correctamente');
-    fetchPaymentsUser();
-  } catch (error) {
-    console.error('Error al eliminar el pago:', error.response?.data || error.message);
-    setSnackbarMessage('Hubo un problema al eliminar el pago');
-    setOpenSnackbar(true);
-  }
-};
+      await deletePayment(paymentId);
+      setSnackbarMessage('Pago eliminado correctamente');
+      setOpenSnackbar(true);
+      setSuccessMessage('Pago eliminado correctamente');
+      fetchPaymentsUser();
+    } catch (error) {
+      console.error('Error al eliminar el pago:', error.response?.data || error.message);
+      setSnackbarMessage('Hubo un problema al eliminar el pago');
+      setOpenSnackbar(true);
+    }
+  };
 
   const handlePrintReceipt = (payment) => {
     const doc = new jsPDF();
@@ -284,12 +284,12 @@ const handleDeletePayment = async (paymentId) => {
           </TableHead>
           <TableBody>
             {paymentsList?.map((payment) => (
-              <TableRow key={payment._id}>
-                <TableCell>{payment.tenantId.name}</TableCell>
-                <TableCell>${payment.amount}</TableCell>
-                <TableCell>{ payment.date}</TableCell>
-                <TableCell>{payment.description}</TableCell>
-                <TableCell>{payment.receiptNumber}</TableCell>
+              <TableRow key={payment?._id}>
+                <TableCell>{payment?.tenantId.name}</TableCell>
+                <TableCell>${payment?.amount}</TableCell>
+                <TableCell>{ payment?.date}</TableCell>
+                <TableCell>{payment?.description}</TableCell>
+                <TableCell>{payment?.receiptNumber}</TableCell>
                 <TableCell>
                 <Button
                   variant="contained"
@@ -327,7 +327,7 @@ const handleDeletePayment = async (paymentId) => {
           label="Inquilino"
           fullWidth
           margin="normal"
-          value={newPayment?.tenantId || ''}
+          value={newPayment?.tenantId?._id || ''}
           onChange={handleChange}
         >
         {tenantsList?.map((tenant) => (

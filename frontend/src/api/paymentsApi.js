@@ -15,6 +15,20 @@ export const fetchPayments = async () => {
   }
 };
 
+export const fetchPaymentsByTenantId = async (tenantId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.get(`/payments/tenant/${tenantId}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error al obtener los pagos del inquilino ${tenantId}:`, error);
+    console.error('Detalle del error:', error.response);
+    throw error;
+  }
+};
+
 export const createPayment = async (paymentData) => {
   try {
     const token = localStorage.getItem('token');

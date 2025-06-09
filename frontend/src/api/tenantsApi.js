@@ -51,3 +51,18 @@ export const deleteTenant = async (tenantId) => {
     throw error;
   }
 };
+
+export const updateTenant = async (id, updatedData) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.put(`/tenants/${id}`, updatedData, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al actualizar el inquilino:', error);
+    throw error;
+  }
+};

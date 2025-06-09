@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const tenantsRoutes = require('./routes/tenants')
 const paymentRoutes = require('./routes/payments');
 const userRoutes = require('./routes/users')
+const authRoutes = require('./routes/auth')
+
 const cors = require('cors')
 const authenticateToken = require('./middlewares/authenticateToken');
 
@@ -32,6 +34,7 @@ app.get('/', (req, res) => {
 app.use('/tenants', tenantsRoutes); 
 app.use('/payments', paymentRoutes);
 app.use('/users', userRoutes);
+app.use('/auth', authRoutes)
 
 // Iniciar el servidor
 app.listen(port, () => {
