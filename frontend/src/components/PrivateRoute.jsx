@@ -1,10 +1,35 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
+import { CircularProgress } from '@mui/material';
 
 const PrivateRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  if(!token){
-    return <Navigate to="/login" replace />;
+  const location = useLocation()
+  const { isAuthenticated, isLoading, validateToken } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      validateToken();
+    }
+  }, []);
+
+  if (isLoading) {
+    return <CircularProgress />;
   }
+
+  if (!isAuthenticated) {
+    return (
+      <Navigate 
+        to="/login" 
+        state={{ 
+          from: location,
+          message: "Por favor inicia sesión para acceder" 
+        }} 
+        replace 
+      />
+    );
+  }
+
   return children
 };
 

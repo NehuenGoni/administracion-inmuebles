@@ -1,16 +1,18 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link as RouterLink, useLocation } from 'react-router-dom';
-import { Formik, Field, Form } from 'formik';
+import { Formik, Field, Form, useFormikContext } from 'formik';
 import * as Yup from 'yup';
-import { Button, TextField, Typography, Link } from '@mui/material';
+import { Button, TextField, Typography, Link, CircularProgress } from '@mui/material';
 import api from '../api/axiosConfig';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
-  const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();
-
   const location = useLocation()
   const isLogin = location.pathname === '/login'
+
+  const [errorMessage, setErrorMessage] = useState('');
+  const navigate = useNavigate();
+  const { setIsAuthenticated, loginSuccess, isLoading, setIsLoading } = useAuth()
 
   const initialValues = {
     name: '',
@@ -27,24 +29,40 @@ const Login = () => {
       .required('Este campo es obligatorio')
   });
 
-  const onSubmit = async (values) => {
+  useEffect(() => {
+    setErrorMessage('')
+  }, [location.pathname])
+  
+  const onSubmit = async (values, {resetForm} ) => {
+    setIsLoading(true)
+    setErrorMessage('')
     if(isLogin) {
       try {
         const response = await api.post('/users/login', values);
-        localStorage.setItem('token', response.data.token);
+        loginSuccess(response.data.token);
+        setIsAuthenticated(true)
+        setIsLoading(false)
         navigate('/');
       } catch (error) {
+        setIsLoading(false)
         setErrorMessage('Error al iniciar sesión. Intenta de nuevo.');
       }
     } else {
       try {
-        await api.post('/users/register', values);
-        navigate('/login');
+        const response = await api.post('/users/register', values);
+        setErrorMessage(response.data.message)
+        setIsLoading(false)
+        resetForm()
+        setTimeout(() => {
+          navigate('/login')
+        }, 3000);
       } catch (error) {
-        setErrorMessage('Error al crear cuenta. Intenta de nuevo.');
+        setIsLoading(false)
+        setErrorMessage(error.response.data.message);
       }
     }
   };
+
 
   return (
     <div 
@@ -60,6 +78,7 @@ const Login = () => {
       {errorMessage && <Typography color="error">{errorMessage}</Typography>}
       
       <Formik
+        key={location.pathname}
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={onSubmit}
@@ -106,17 +125,30 @@ const Login = () => {
               />
             </div>
             <Button type="submit" variant="contained" color="primary" fullWidth>
-              { isLogin ? 'Iniciar sesión' : 'Registrarse' }
+              {isLoading 
+                ? <CircularProgress size={24} color='inherit' /> 
+                : ( isLogin ? 'Iniciar sesión' : 'Registrarse' )
+                }
             </Button>
           </Form>
         )}
       </Formik>
+      {isLogin && (
       <Typography variant="body2" sx={{ mt: 2 }}>
-        ¿No tenés una cuenta?{' '}
-        <Link component={RouterLink} to="/register">
-        Registrate acá
-      </Link>
-    </Typography>
+          ¿No tenés una cuenta?{' '}
+          <Link component={RouterLink} to="/register">
+          Registrate acá
+        </Link>
+      </Typography>
+    )}      
+    {!isLogin && (
+      <Typography variant="body2" sx={{ mt: 2 }}>
+          Cuenta creada?{' '}
+          <Link component={RouterLink} to="/login">
+          Inicia sesión ACA
+        </Link>
+      </Typography>
+    )}
     </div>
   );
 };

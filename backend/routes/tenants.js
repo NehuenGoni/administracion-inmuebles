@@ -10,16 +10,12 @@ const tenantsController = require('../controllers/tenantsController')
 
 const authenticateToken = require('../middlewares/authenticateToken');
 
-
 router.get('/', authenticateToken, tenantsController.getTenants);
 router.post('/', authenticateToken, tenantsController.createTenant);
 router.put('/:id', authenticateToken, tenantsController.updateTenant);
 router.delete('/:id',authenticateToken, tenantsController.deleteTenant);
 
-// create payment
 router.post('/payments', paymentController.createPayment);
-
-// get payment by tenantId
 router.get('/payments/:tenantId', paymentController.getPaymentById);
 
 module.exports = router;
