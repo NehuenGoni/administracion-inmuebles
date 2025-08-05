@@ -5,9 +5,6 @@ import PeopleIcon from '@mui/icons-material/People';
 import PaymentIcon from '@mui/icons-material/Payment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
-import Brightness7Icon from '@mui/icons-material/Brightness7';
-import { useEffect, useState } from 'react';
-import MenuIcon from '@mui/material/Menu';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
