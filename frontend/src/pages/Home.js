@@ -1,15 +1,25 @@
-import React, { useEffect } from 'react';
-import { Container, Typography, Button, Box } from '@mui/material';
+import React, { useEffect, useState} from 'react';
+import { Container, Typography, Button, Box, CircularProgress } from '@mui/material';
 import { Link } from 'react-router-dom';
 import { fetchUserData } from '../api/usersApi';
 
 const Home = () => {
+  
+  const [username, setUsername] = useState(null);
+
 
   useEffect(() => {
-    fetchUserData()
-  },[])
-
-  const name = localStorage.getItem('username'); 
+    const loadUser = async () => {
+      try {
+        await fetchUserData(); 
+        setUsername(localStorage.getItem('username')); 
+      } catch (error) {
+        console.error('Error loading user:', error);
+      }
+    };
+    
+    loadUser();
+  }, []);
 
   return (
     <Container sx={{ 
@@ -21,11 +31,14 @@ const Home = () => {
         textAlign: 'center',
       }}>
       <Typography variant="h3" component="h1" gutterBottom style={{marginTop:'20px', marginBottom:'0px'}} >
-        Hola {`${name}`}
+        {username ? `Hola ${username}` : <CircularProgress/> }
       </Typography>
+      {username &&
       <Typography variant="h5" component="h1" gutterBottom style={{marginTop:'10px', marginBottom:'30px'}} >
         que desea hacer?
       </Typography>
+      }
+
       <Box>
         <Button 
           variant="contained" 
