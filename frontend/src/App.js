@@ -1,5 +1,7 @@
-import React, {useEffect} from 'react';
-import { BrowserRouter as Router, Route, Routes, useNavigate} from 'react-router-dom';
+import React, {useEffect, useState} from 'react';
+import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation} from 'react-router-dom';
+import { ThemeProvider, CssBaseline, Box } from '@mui/material';
+import { lightTheme, darkTheme } from './theme';
 import Home from './pages/Home';
 import Tenants from './pages/Tenants';
 import Payments from './pages/Payments';
@@ -7,45 +9,50 @@ import Receipts from './pages/Receipts';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import PrivateRoute from './components/PrivateRoute';
-import api from './api/axiosConfig';
+import { AuthProvider } from './context/AuthContext';
+import { useAuth } from './context/AuthContext';
 
 function AppContent() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { validateToken } = useAuth();
+  
+  const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
-    const validateToken = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        navigate('/login');
-        return;
-      }
+    const publicRoutes = ['/login', '/register'];
+    
+    if (publicRoutes.includes(location.pathname)) return;
 
-      try {
-        await api.get('/auth/validate', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-      } catch (error) {
-        localStorage.removeItem('token');
-        navigate('/login');
-      }
-    };
+    validateToken().then(valid => {
+      if (!valid) navigate('/login');
+    });
+}, [location.pathname]);
 
-    validateToken();
-  }, [navigate]);
 
-  return (
+return (
     <>
-      <Navbar />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Login />} />
-        <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
-        <Route path="/tenants" element={<PrivateRoute><Tenants /></PrivateRoute>} />
-        <Route path="/payments" element={<PrivateRoute><Payments /></PrivateRoute>} />
-        <Route path="/receipts" element={<PrivateRoute><Receipts /></PrivateRoute>} />
-      </Routes>
+      <ThemeProvider theme={darkMode ? darkTheme : lightTheme}>
+        <CssBaseline />
+        <Navbar toggleDarkMode={() => setDarkMode(!darkMode)} />
+        <Box
+          sx={{
+            minHeight: '100vh',
+            backgroundColor: (theme) => theme.palette.background.default,
+            color: (theme) => theme.palette.text.primary,
+            paddingTop: '64px',
+          }}
+        >
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Login />} />
+          <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
+          <Route path="/tenants" element={<PrivateRoute><Tenants /></PrivateRoute>} />
+          <Route path="/payments" element={<PrivateRoute><Payments /></PrivateRoute>} />
+          <Route path="/receipts" element={<PrivateRoute><Receipts /></PrivateRoute>} />
+        </Routes>
+        </Box>
+      </ThemeProvider>
     </>
   );
 }
@@ -53,7 +60,9 @@ function AppContent() {
 function App() {
   return (
     <Router>
-      <AppContent />
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
     </Router>
   );
 }
