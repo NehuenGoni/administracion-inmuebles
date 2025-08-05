@@ -26,8 +26,8 @@ function AppContent() {
 
     validateToken().then(valid => {
       if (!valid) navigate('/login');
-    });
-}, [location.pathname]);
+    }); 
+  }, [location.pathname, navigate, validateToken])
 
 
 return (

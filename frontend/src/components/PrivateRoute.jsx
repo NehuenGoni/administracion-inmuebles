@@ -11,7 +11,7 @@ const PrivateRoute = ({ children }) => {
     if (!isLoading && !isAuthenticated) {
       validateToken();
     }
-  }, []);
+  }, [validateToken, isLoading, isAuthenticated ]);
 
   if (isLoading) {
     return <CircularProgress />;
