@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation} from 'react-router-dom';
 import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { lightTheme, darkTheme } from './theme';
@@ -16,10 +16,14 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
   const { validateToken } = useAuth();
+  const hasRun = useRef(false);
   
   const [darkMode, setDarkMode] = useState(false);
 
   useEffect(() => {
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const publicRoutes = ['/login', '/register'];
     
     if (publicRoutes.includes(location.pathname)) return;
@@ -27,7 +31,7 @@ function AppContent() {
     validateToken().then(valid => {
       if (!valid) navigate('/login');
     }); 
-  }, [location.pathname])
+  }, [location.pathname, navigate, validateToken]);
 
 
 return (
