@@ -119,7 +119,7 @@ const handleDeleteTenant = async (tenantId) => {
   }, []);
 
   return (
-    <Container>
+    <Container> 
       <Typography variant="h4" component="h2" gutterBottom>
         Lista de Inquilinos
       </Typography>
@@ -235,7 +235,7 @@ const handleDeleteTenant = async (tenantId) => {
         </DialogActions>
       </Dialog>
       <Dialog open={openPaymentsDialog} onClose={handleClosePaymentsDialog} fullWidth maxWidth="sm">
-      <DialogTitle sx={{ backgroundColor: '#1976d2', color: 'white' }}>
+      <DialogTitle sx={{ backgroundColor: 'primary.main', color: 'white' }}>
         Historial de Pagos
       </DialogTitle>
       <DialogContent>
