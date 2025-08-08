@@ -10,6 +10,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  Container,
   TableRow,
   Paper,
   Button,
@@ -203,7 +204,7 @@ const Payments = () => {
 
   
   return (
-    <div>
+    <Container>
       <h1>Gestión de Pagos</h1>
       <Button variant="contained" 
               color="primary" 
@@ -217,7 +218,7 @@ const Payments = () => {
 
       <TableContainer component={Paper} style={{ marginTop: '20px' }}>
         <Table>
-          <TableHead>
+          <TableHead >
             <TableRow>
               <TableCell>
                 <TableSortLabel
@@ -274,7 +275,7 @@ const Payments = () => {
                 </Button>
                 <Button
                   variant="outlined"
-                  color="secondary"
+                  color="error"
                   onClick={() => handleDeletePayment(payment._id)}>
                     Eliminar
                 </Button>
@@ -288,7 +289,7 @@ const Payments = () => {
 
       {/* Create Modal */}
       <Dialog open={openModal} onClose={() => setOpenModal(false)}>
-      <DialogTitle>{isEditMode ? 'Editar Pago' : 'Crear Pago'}</DialogTitle>
+      <DialogTitle sx={{ backgroundColor: 'primary.main', color: 'white' }} >{isEditMode ? 'Editar Pago' : 'Crear Pago'}</DialogTitle>
         <DialogContent>
         <TextField
           name="tenantId"
@@ -368,7 +369,7 @@ const Payments = () => {
     </Snackbar>
     )}
 
-    </div>
+    </Container>
   );
 };
 
