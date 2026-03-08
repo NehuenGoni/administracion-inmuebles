@@ -134,12 +134,19 @@ const Login = () => {
         )}
       </Formik>
       {isLogin && (
+      <>
       <Typography variant="body2" sx={{ mt: 2 }}>
           ¿No tenés una cuenta?{' '}
           <Link component={RouterLink} to="/register">
           Registrate acá
         </Link>
       </Typography>
+      <Typography variant="body2" sx={{ mt: 1 }}>
+          <Link component={RouterLink} to="/forgot-password">
+          ¿Olvidaste tu contraseña?
+        </Link>
+      </Typography>
+      </>
     )}      
     {!isLogin && (
       <Typography variant="body2" sx={{ mt: 2 }}>

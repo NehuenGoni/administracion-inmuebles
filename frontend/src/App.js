@@ -7,6 +7,8 @@ import Tenants from './pages/Tenants';
 import Payments from './pages/Payments';
 import Receipts from './pages/Receipts';
 import Admin from './pages/Admin';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import PrivateRoute from './components/PrivateRoute';
@@ -25,9 +27,9 @@ function AppContent() {
     if (hasRun.current) return;
     hasRun.current = true;
 
-    const publicRoutes = ['/login', '/register'];
-    
-    if (publicRoutes.includes(location.pathname)) return;
+    const publicRoutes = ['/login', '/register', '/forgot-password'];
+
+    if (publicRoutes.includes(location.pathname) || location.pathname.startsWith('/reset-password/')) return;
 
     validateToken().then(valid => {
       if (!valid) navigate('/login');
@@ -51,6 +53,8 @@ return (
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Login />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password/:token" element={<ResetPassword />} />
           <Route path="/" element={<PrivateRoute><Home /></PrivateRoute>} />
           <Route path="/tenants" element={<PrivateRoute><Tenants /></PrivateRoute>} />
           <Route path="/payments" element={<PrivateRoute><Payments /></PrivateRoute>} />

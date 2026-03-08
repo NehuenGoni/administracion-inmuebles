@@ -36,6 +36,7 @@ const authLimiter = rateLimit({
 });
 app.use('/users/login', authLimiter);
 app.use('/users/register', authLimiter);
+app.use('/users/forgot-password', authLimiter);
 
 // MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -48,11 +49,6 @@ mongoose.connect(process.env.MONGO_URI, {
 // Middleware para parsear JSON
 app.use(express.json());
 
-// Test
-app.get('/', (req, res) => {
-  res.send('Backend funcionando');
-});
-
 // Rutas
 app.use('/tenants', tenantsRoutes);
 app.use('/payments', paymentRoutes);
@@ -62,5 +58,5 @@ app.use('/admin', adminRoutes)
 
 // Iniciar el servidor
 app.listen(port, () => {
-  console.log(`Servidor corriendo`);
+  console.log(`Servidor corriendo en puerto ${port}`);
 });

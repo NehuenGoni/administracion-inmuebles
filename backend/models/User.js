@@ -27,6 +27,14 @@ const userSchema = new mongoose.Schema(
       type: [String],
       default: ['tenants:read', 'tenants:write', 'payments:read', 'payments:write', 'receipts:read'],
     },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
   },
   {
     timestamps: true,
