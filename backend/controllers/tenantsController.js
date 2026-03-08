@@ -13,11 +13,16 @@ const getTenants = async (req, res) => {
 
 const createTenant = async (req, res) => {
   const userId = req.user.id;
+  const { name, department, status } = req.body;
+
+  if (!name || !department) {
+    return res.status(400).json({ message: 'Nombre y departamento son obligatorios' });
+  }
 
   const tenant = new Tenant({
-    name: req.body.name,
-    department: req.body.department,
-    status: req.body.status || 'Al día',
+    name,
+    department,
+    status: status || 'Al día',
     user: userId,
   });
 
@@ -48,12 +53,19 @@ const updateTenant = async (req, res) => {
 };
 
 const deleteTenant = async (req, res) => {
-    try {
-    const { id } = req.params;
-    await Tenant.findByIdAndDelete(id);
+  try {
+    const tenant = await Tenant.findById(req.params.id);
+    if (!tenant) {
+      return res.status(404).json({ message: 'Inquilino no encontrado' });
+    }
+
+    if (tenant.user.toString() !== req.user.id) {
+      return res.status(403).json({ message: 'Sin autorización para esta acción.' });
+    }
+
+    await Tenant.findByIdAndDelete(req.params.id);
     res.status(200).json({ message: 'Inquilino eliminado' });
   } catch (error) {
-    console.error('Error al eliminar inquilino:', error);
     res.status(500).json({ message: 'Error del servidor' });
   }
 };
