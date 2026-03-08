@@ -5,6 +5,7 @@ const tenantsRoutes = require('./routes/tenants')
 const paymentRoutes = require('./routes/payments');
 const userRoutes = require('./routes/users')
 const authRoutes = require('./routes/auth')
+const adminRoutes = require('./routes/admin')
 
 const cors = require('cors');
 const helmet = require('helmet');
@@ -53,10 +54,11 @@ app.get('/', (req, res) => {
 });
 
 // Rutas
-app.use('/tenants', tenantsRoutes); 
+app.use('/tenants', tenantsRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/users', userRoutes);
 app.use('/auth', authRoutes)
+app.use('/admin', adminRoutes)
 
 // Iniciar el servidor
 app.listen(port, () => {

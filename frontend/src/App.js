@@ -6,6 +6,7 @@ import Home from './pages/Home';
 import Tenants from './pages/Tenants';
 import Payments from './pages/Payments';
 import Receipts from './pages/Receipts';
+import Admin from './pages/Admin';
 import Navbar from './components/Navbar';
 import Login from './components/Login';
 import PrivateRoute from './components/PrivateRoute';
@@ -54,6 +55,7 @@ return (
           <Route path="/tenants" element={<PrivateRoute><Tenants /></PrivateRoute>} />
           <Route path="/payments" element={<PrivateRoute><Payments /></PrivateRoute>} />
           <Route path="/receipts" element={<PrivateRoute><Receipts /></PrivateRoute>} />
+          <Route path="/admin" element={<PrivateRoute requiredRole="superadmin"><Admin /></PrivateRoute>} />
         </Routes>
         </Box>
       </ThemeProvider>

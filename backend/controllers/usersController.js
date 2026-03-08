@@ -46,11 +46,18 @@ const login = async (req, res) => {
       return res.status(400).json({ message: 'Credenciales inválidas' });
     }
 
-    const token = jwt.sign({ id: user._id, email: user.email }, JWT_SECRET, {
-      expiresIn: '1d',
-    });
+    const token = jwt.sign(
+      { id: user._id, email: user.email, role: user.role, permissions: user.permissions },
+      JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
-    res.status(200).json({ message: 'Inicio de sesión exitoso', token });
+    res.status(200).json({
+      message: 'Inicio de sesión exitoso',
+      token,
+      role: user.role,
+      permissions: user.permissions,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Error al iniciar sesión' });
@@ -70,6 +77,8 @@ const getUserData = async (req, res) => {
     res.status(200).json({
       name: user.name,
       email: user.email,
+      role: user.role,
+      permissions: user.permissions,
     });
   } catch (error) {
     console.error(error);

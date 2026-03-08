@@ -18,6 +18,15 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    role: {
+      type: String,
+      enum: ['superadmin', 'admin'],
+      default: 'admin',
+    },
+    permissions: {
+      type: [String],
+      default: ['tenants:read', 'tenants:write', 'payments:read', 'payments:write', 'receipts:read'],
+    },
   },
   {
     timestamps: true,

@@ -39,7 +39,7 @@ const Login = () => {
     if(isLogin) {
       try {
         const response = await api.post('/users/login', values);
-        loginSuccess(response.data.token);
+        loginSuccess(response.data.token, '', response.data.role, response.data.permissions);
         setIsAuthenticated(true)
         setIsLoading(false)
         navigate('/');

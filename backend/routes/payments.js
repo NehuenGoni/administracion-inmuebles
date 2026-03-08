@@ -2,17 +2,18 @@ const express = require('express');
 const router = express.Router();
 const paymentController = require('../controllers/paymentController');
 const authenticateToken = require('../middlewares/authenticateToken')
+const { authorizePermission } = require('../middlewares/authorize');
 
-router.post('/', authenticateToken, paymentController.createPayment);
+router.post('/', authenticateToken, authorizePermission('payments:write'), paymentController.createPayment);
 
-router.get('/', authenticateToken, paymentController.getPayments);
+router.get('/', authenticateToken, authorizePermission('payments:read'), paymentController.getPayments);
 
-router.get('/:id', authenticateToken, paymentController.getPaymentById);
+router.get('/:id', authenticateToken, authorizePermission('payments:read'), paymentController.getPaymentById);
 
-router.put('/:id', authenticateToken, paymentController.updatePayment);
+router.put('/:id', authenticateToken, authorizePermission('payments:write'), paymentController.updatePayment);
 
-router.delete('/:id', authenticateToken, paymentController.deletePayment);
+router.delete('/:id', authenticateToken, authorizePermission('payments:write'), paymentController.deletePayment);
 
-router.get('/tenant/:tenantId', authenticateToken, paymentController.getPaymentsByTenant);
+router.get('/tenant/:tenantId', authenticateToken, authorizePermission('payments:read'), paymentController.getPaymentsByTenant);
 
 module.exports = router;

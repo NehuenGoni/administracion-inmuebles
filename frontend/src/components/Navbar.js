@@ -5,6 +5,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import PaymentIcon from '@mui/icons-material/Payment';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -15,7 +16,7 @@ const navButtonStyles = {
 };
 
 const NavBar = ({ toggleDarkMode }) => {
-  const {isAuthenticated, logout} = useAuth()
+  const {isAuthenticated, logout, isSuperAdmin, hasPermission} = useAuth()
 
   return (
     <AppBar position="static" style={{ marginBottom: '16px' }}>
@@ -35,28 +36,43 @@ const NavBar = ({ toggleDarkMode }) => {
           >
             Inicio
           </Button>
-          <Button 
-            color="secondary" 
+          {hasPermission('tenants:read') && (
+          <Button
+            color="secondary"
             sx={navButtonStyles}
-            component={Link} 
+            component={Link}
             startIcon={<PeopleIcon/>}
             to="/tenants"
           >
             Inquilinos
           </Button>
-          <Button 
-            color="secondary" 
+          )}
+          {hasPermission('payments:read') && (
+          <Button
+            color="secondary"
             sx={navButtonStyles}
-            component={Link} 
+            component={Link}
             startIcon={<PaymentIcon/>}
             to="/payments"
           >
             Pagos
-          </Button>          
-          <Button 
-            color="secondary" 
+          </Button>
+          )}
+          {isSuperAdmin && (
+          <Button
+            color="secondary"
             sx={navButtonStyles}
-            component={Link} 
+            component={Link}
+            startIcon={<AdminPanelSettingsIcon/>}
+            to="/admin"
+          >
+            Admin
+          </Button>
+          )}
+          <Button
+            color="secondary"
+            sx={navButtonStyles}
+            component={Link}
             startIcon={<LogoutIcon/>}
             onClick={() => {logout()}}
           >
