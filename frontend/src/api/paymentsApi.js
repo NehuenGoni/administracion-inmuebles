@@ -73,3 +73,16 @@ export const deletePayment = async (paymentId) => {
     throw error;
   }
 };
+
+export const sendPaymentReceipt = async (paymentId) => {
+  try {
+    const token = localStorage.getItem('token');
+    const response = await api.post(`/payments/${paymentId}/send-receipt`, {}, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error al enviar el recibo:', error);
+    throw error;
+  }
+};

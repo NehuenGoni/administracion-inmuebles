@@ -22,6 +22,7 @@ export const createTenant = async (newTenantData) => {
       '/tenants',
       {
         name: newTenantData.name,
+        email: newTenantData.email,
         department: newTenantData.department,
         status: null,
       },

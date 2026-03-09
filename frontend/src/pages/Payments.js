@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import moment from 'moment'
 import jsPDF from "jspdf";
 import { getTenants } from '../api/tenantsApi';
-import { fetchPayments, createPayment, updatePayment, deletePayment  } from '../api/paymentsApi';
+import { fetchPayments, createPayment, updatePayment, deletePayment, sendPaymentReceipt } from '../api/paymentsApi';
 
 import {
   Table,
@@ -22,7 +22,9 @@ import {
   TableSortLabel,
   MenuItem,
   Snackbar,
-  Alert
+  Alert,
+  Box,
+  CircularProgress
 } from '@mui/material';
 
 const Payments = () => {
@@ -41,6 +43,7 @@ const Payments = () => {
 
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('amount');
+  const [sendingReceiptId, setSendingReceiptId] = useState(null);
 
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState('')
@@ -159,6 +162,22 @@ const Payments = () => {
     }
   };
 
+  const handleSendReceipt = async (payment) => {
+    try {
+      setSendingReceiptId(payment._id);
+      await sendPaymentReceipt(payment._id);
+      setSnackbarMessage(`Recibo enviado a ${payment?.tenantId?.email || 'correo del inquilino'}`);
+      setOpenSnackbar(true);
+    } catch (error) {
+      console.error('Error al enviar el recibo:', error);
+      const errorMsg = error.response?.data?.message || 'Error al enviar el recibo';
+      setSnackbarMessage(errorMsg);
+      setOpenSnackbar(true);
+    } finally {
+      setSendingReceiptId(null);
+    }
+  };
+
   const handlePrintReceipt = (payment) => {
     const doc = new jsPDF();
 
@@ -186,7 +205,7 @@ const Payments = () => {
     const lineSpacing = 10;
 
     doc.text(`Fecha: ${payment.date}`, 20, startY + lineSpacing * 2);
-    doc.text(`Nombre del inquilino: ${payment.tenantId.name}`, 20, startY);
+    doc.text(`Nombre del inquilino: ${payment?.tenantId?.name || 'No disponible'}`, 20, startY);
     doc.text(`Monto: $${payment.amount}`, 20, startY + lineSpacing);
     doc.text(`Descripción: ${payment.description}`, 20, startY + lineSpacing * 3);
     doc.text(`Número de Recibo: ${payment.receiptNumber}`, 20, startY + lineSpacing * 4);
@@ -255,30 +274,45 @@ const Payments = () => {
           <TableBody>
             {paymentsList?.map((payment) => (
               <TableRow key={payment?._id}>
-                <TableCell>{payment?.tenantId.name}</TableCell>
+                <TableCell>{payment?.tenantId?.name}</TableCell>
                 <TableCell>${payment?.amount}</TableCell>
                 <TableCell>{ payment?.date}</TableCell>
                 <TableCell>{payment?.description}</TableCell>
                 <TableCell>{payment?.receiptNumber}</TableCell>
                 <TableCell>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handlePrintReceipt(payment)}>
-                    Imprimir
-                </Button>
-                <Button                   
-                  variant="contained"
-                  color="default" 
-                  onClick={() => handleOpenModal(payment)}>
-                    Editar
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => handleDeletePayment(payment._id)}>
-                    Eliminar
-                </Button>
+                  <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                    <Button
+                      variant="contained"
+                      color="primary"
+                      size="small"
+                      onClick={() => handlePrintReceipt(payment)}>
+                      Imprimir
+                    </Button>
+                    <Button                   
+                      variant="contained"
+                      color="default" 
+                      size="small"
+                      onClick={() => handleOpenModal(payment)}>
+                      Editar
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="success"
+                      size="small"
+                      disabled={sendingReceiptId === payment._id}
+                      onClick={() => handleSendReceipt(payment)}
+                      startIcon={sendingReceiptId === payment._id ? <CircularProgress size={20} color="inherit" /> : null}
+                    >
+                      {sendingReceiptId === payment._id ? 'Enviando...' : 'Enviar Recibo'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      size="small"
+                      onClick={() => handleDeletePayment(payment._id)}>
+                      Eliminar
+                    </Button>
+                  </Box>
                 </TableCell>
               </TableRow>
             ))}

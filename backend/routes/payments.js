@@ -8,12 +8,16 @@ router.post('/', authenticateToken, authorizePermission('payments:write'), payme
 
 router.get('/', authenticateToken, authorizePermission('payments:read'), paymentController.getPayments);
 
+// Rutas específicas primero
+router.post('/:paymentId/send-receipt', authenticateToken, authorizePermission('payments:write'), paymentController.sendReceiptEmail);
+
+router.get('/tenant/:tenantId', authenticateToken, authorizePermission('payments:read'), paymentController.getPaymentsByTenant);
+
+// Rutas genéricas después
 router.get('/:id', authenticateToken, authorizePermission('payments:read'), paymentController.getPaymentById);
 
 router.put('/:id', authenticateToken, authorizePermission('payments:write'), paymentController.updatePayment);
 
 router.delete('/:id', authenticateToken, authorizePermission('payments:write'), paymentController.deletePayment);
-
-router.get('/tenant/:tenantId', authenticateToken, authorizePermission('payments:read'), paymentController.getPaymentsByTenant);
 
 module.exports = router;

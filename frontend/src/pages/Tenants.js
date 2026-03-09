@@ -29,7 +29,7 @@ const Tenants = () => {
   const [tenants, setTenants] = useState([]);
   const [openPaymentsDialog, setOpenPaymentsDialog] = useState(false);
   const [openCreateTenantDialog, setOpenCreateTenantDialog] = useState(false)
-  const [newTenant, setNewTenant] = useState({ name: '', department: '' });
+  const [newTenant, setNewTenant] = useState({ name: '', email: '', department: '' });
   const [selectedTenantPayments, setSelectedTenantPayments] = useState([])
 
   const [openEditDialog, setOpenEditDialog] = useState(false);
@@ -45,7 +45,7 @@ const Tenants = () => {
 
   const handleCloseCreateTenantDialog = () => {
     setOpenCreateTenantDialog(false);
-    setNewTenant({ name: '', department: '' });
+    setNewTenant({ name: '', email: '', department: '' });
   };
 
   const handleClosePaymentsDialog = () => {
@@ -136,6 +136,7 @@ const handleDeleteTenant = async (tenantId) => {
             <TableRow>
               <TableCell>ID</TableCell>
               <TableCell>Nombre</TableCell>
+              <TableCell>Email</TableCell>
               <TableCell>Departamento</TableCell>
               <TableCell>Estado de Pago</TableCell>
               <TableCell>Acciones</TableCell>
@@ -146,6 +147,7 @@ const handleDeleteTenant = async (tenantId) => {
               <TableRow key={tenant.id}>
                 <TableCell>{tenant.id}</TableCell>
                 <TableCell>{tenant.name}</TableCell>
+                <TableCell>{tenant.email}</TableCell>
                 <TableCell>{tenant.department}</TableCell>
                 <TableCell>{tenant.status}</TableCell>
                 <TableCell>
@@ -195,6 +197,14 @@ const handleDeleteTenant = async (tenantId) => {
           />
           <TextField
             margin="dense"
+            label="Email"
+            type="email"
+            fullWidth
+            value={newTenant.email}
+            onChange={(e) => setNewTenant({ ...newTenant, email: e.target.value })}
+          />
+          <TextField
+            margin="dense"
             label="Departamento"
             fullWidth
             value={newTenant.department}
@@ -218,6 +228,14 @@ const handleDeleteTenant = async (tenantId) => {
             fullWidth
             value={editableTenant?.name || ''}
             onChange={(e) => setEditableTenant({ ...editableTenant, name: e.target.value })}
+          />
+          <TextField
+            margin="dense"
+            label="Email"
+            type="email"
+            fullWidth
+            value={editableTenant?.email || ''}
+            onChange={(e) => setEditableTenant({ ...editableTenant, email: e.target.value })}
           />
           <TextField
             margin="dense"

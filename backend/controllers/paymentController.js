@@ -1,4 +1,6 @@
 const Payment = require('../models/Payment');
+const Tenant = require('../models/Tenant');
+const { sendPaymentReceipt } = require('../services/emailService');
 const moment = require('moment');
 
 const createPayment = async (req, res) => {
@@ -124,11 +126,52 @@ const getPaymentsByTenant = async (req, res) => {
   }
 };
 
+const sendReceiptEmail = async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const userId = req.user.id;
+
+    // Buscar el pago
+    const payment = await Payment.findById(paymentId);
+    if (!payment) {
+      return res.status(404).json({ message: 'Pago no encontrado' });
+    }
+
+    // Verificar autorización
+    if (payment.user.toString() !== userId) {
+      return res.status(403).json({ message: 'Sin autorización para esta acción.' });
+    }
+
+    // Buscar el inquilino
+    const tenant = await Tenant.findById(payment.tenantId);
+    if (!tenant) {
+      return res.status(404).json({ message: 'Inquilino no encontrado' });
+    }
+
+    // Validar que el inquilino tenga email
+    if (!tenant.email) {
+      return res.status(400).json({ message: 'El inquilino no tiene un email registrado' });
+    }
+
+    // Enviar el email con el recibo
+    await sendPaymentReceipt(tenant.email, tenant.name, payment);
+
+    res.json({ 
+      message: 'Comprobante enviado exitosamente al inquilino',
+      email: tenant.email,
+      receiptNumber: payment.receiptNumber
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error al enviar el comprobante: ' + error.message });
+  }
+};
+
 module.exports = {
   createPayment,
   getPayments,
   getPaymentById,
   updatePayment,
   deletePayment,
-  getPaymentsByTenant
+  getPaymentsByTenant,
+  sendReceiptEmail
 };
