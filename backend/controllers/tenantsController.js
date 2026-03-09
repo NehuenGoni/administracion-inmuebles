@@ -15,10 +15,7 @@ const createTenant = async (req, res) => {
   const userId = req.user.id;
   const { name, department, email, status } = req.body;
 
-  console.log('🔍 Datos recibidos en createTenant:', { name, department, email, status });
-
   if (!name || !department || !email) {
-    console.log('❌ Validación fallida:', { name, department, email });
     return res.status(400).json({ message: 'Nombre, email y departamento son obligatorios' });
   }
 
@@ -32,10 +29,8 @@ const createTenant = async (req, res) => {
 
   try {
     const newTenant = await tenant.save();
-    console.log('✅ Inquilino guardado:', newTenant);
     res.status(201).json(newTenant);
   } catch (error) {
-    console.log('❌ Error al guardar:', error.message);
     res.status(400).json({ message: error.message });
   }
 };
